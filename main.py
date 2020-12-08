@@ -3,6 +3,7 @@ import os
 from io import BytesIO
 import urllib.request
 import urllib.error
+import tempfile
 
 
 class Country:
@@ -47,28 +48,53 @@ class Country:
 
         return f"https://raw.githubusercontent.com/lipis/flag-icon-css/master/flags/4x3/{self.CODE}.svg"
 
-    def __save_flag(self, url: str, dirpath: str, name: str):
-        self._assert_valid_dir_path(dirpath)
+    def __save_flag(self, url: str, dirpath: str, name: str, file_obj):
+        """ Download and save the image in the given `path`, with the given `name`.
+        If a `file_obj` is given, downloads the image into the `file_obj` instead. """
 
-        # generate saving path
         ext = url.split('.')[-1]
-        name = name.replace("{code}", self.CODE)
-        save_path = os.path.join(dirpath, name + '.' + ext)
+        close_file = False
 
-        # download the image
+        if file_obj is None:
+            # generate a file and open it
+            self._assert_valid_dir_path(dirpath)
+            name = name.replace("{code}", self.CODE)
+            path = os.path.join(dirpath, name + '.' + ext)
+            file_obj = open(path, mode="wb")
+            close_file = True
+
         try:
-            urllib.request.urlretrieve(url, save_path)
+            with urllib.request.urlopen(url) as response:
+                data = response.read()
+                file_obj.write(data)
+
         except urllib.error.HTTPError as e:
             raise ValueError(f"No flag found for country '{self.CODE}'")
 
+        finally:
+            if close_file:
+                file_obj.close()
+
     def save_flag(self,
                   dirpath: str = os.getcwd(),
-                  name="{code}"
+                  name="{code}",
+                  file_obj=None,
                   ):
-        self.__save_flag(self.flag_url, dirpath=dirpath, name=name)
+        """ Saves the country flag (1:1 ratio), svg format. """
+        self.__save_flag(self.flag_url, dirpath=dirpath,
+                         name=name, file_obj=file_obj)
 
-    def save_4x3_flag(self,
+    def save_flag_4x3(self,
                       dirpath: str = os.getcwd(),
-                      name="{code}_4x3"
+                      name="{code}_4x3",
+                      file_obj=None,
                       ):
-        self.__save_flag(self.flag_4x3_url, dirpath=dirpath, name=name)
+        """ Saves the country flag (4:3 ratio), svg format. """
+        self.__save_flag(self.flag_4x3_url, dirpath=dirpath,
+                         name=name, file_obj=file_obj)
+
+    def flag(self,):
+        pass
+
+    def flag_4x3(self,):
+        pass
