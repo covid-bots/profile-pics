@@ -5,6 +5,7 @@ from PIL import Image
 from country_flags import Country
 import os
 import requests
+from tqdm import tqdm
 
 # Configurations
 
@@ -21,7 +22,7 @@ base_img = Image.open(os.path.join(
 
 # Get countries from API
 response = requests.get("https://api.covid19api.com/countries").json()
-for country in response:
+for country in tqdm(response):
     country_obj = Country(country["Country"])
 
     # Load the flag
