@@ -3,6 +3,7 @@ from difflib import SequenceMatcher
 import babel
 import babel.languages
 import os
+import sys
 
 
 class Country:
@@ -78,3 +79,25 @@ class Country:
         flag_name = self.matching_flag_name()
         path = self._flag_name_to_path(flag_name)
         return Image.open(path)
+
+    def __str__(self):
+        string = str()
+        return f"Country({self.name}, {self.code}), PopularLanguage({self.lang_name}, {self.lang_code})"
+
+
+def main():
+    try:
+        country = Country(sys.argv[1])
+        print(country)
+
+    except IndexError as e:
+        # If code argument is not passed
+        print("Country code is not passed as a command line argument")
+
+    except ValueError as e:
+        # Invalid country code
+        print(e)
+
+
+if __name__ == "__main__":
+    main()
