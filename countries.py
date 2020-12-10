@@ -10,12 +10,6 @@ class Country:
 
     FLAGS_DIR_PATH = os.path.join("assets", "flags")
 
-    FLAGS = [
-        flag.split('.')[0]
-        for flag in os.listdir(FLAGS_DIR_PATH)
-        if ".png" in flag
-    ]
-
     def __init__(self, country_code: str):
         self._assert_valid_country_code(country_code)
 
@@ -23,7 +17,7 @@ class Country:
 
         self.__code = country_code.upper()
         self.__name = base_lang.territories[self.code]
-        self.__lang_code = self.get_territory_language_code(self.code).upper()
+        self.__lang_code = self._get_territory_language_code(self.code).upper()
         self.__lang_locale = babel.Locale(self.lang_code.lower())
         self.__lang_name = self.lang_locale.get_display_name(base_lang)
 
@@ -48,7 +42,7 @@ class Country:
         return self.__lang_name
 
     @staticmethod
-    def get_territory_language_code(code: str):
+    def _get_territory_language_code(code: str):
         info = babel.languages.get_territory_language_info(code)
         return max(info, key=lambda lang_code: info[lang_code]["population_percent"])
 
@@ -64,10 +58,17 @@ class Country:
             raise ValueError("Country code must be a 2 character string")
 
     def matching_flag_name(self):
+
+        flags = [
+            flag.split('.')[0]
+            for flag in os.listdir(FLAGS_DIR_PATH)
+            if ".png" in flag
+        ]
+
         ratios = [SequenceMatcher(None, self.name, flag).ratio()
-                  for flag in self.FLAGS]
+                  for flag in flags]
         match_index = ratios.index(max(ratios))
-        return self.FLAGS[match_index]
+        return flags[match_index]
 
     def _flag_name_to_path(self, flag: str):
         return os.path.join(self.FLAGS_DIR_PATH, f"{flag}.png")
